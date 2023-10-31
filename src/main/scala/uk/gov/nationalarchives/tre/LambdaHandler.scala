@@ -16,8 +16,8 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
     event.getRecords.asScala.toList match {
       case snsRecord :: Nil =>
         context.getLogger.log(s"Received message: ${snsRecord.getSNS.getMessage}\n")
-        val messageType = MessageParsingUtils.parseGenericMessage(snsRecord.getSNS.getMessage).properties.messageType
-        println(s"Message type: $messageType")
+        //val messageType = MessageParsingUtils.parseGenericMessage(snsRecord.getSNS.getMessage).properties.messageType
+        println(s"Message type: testing")
       case _ => throw new RuntimeException("Single record expected; zero or multiple received")
     }
   }
