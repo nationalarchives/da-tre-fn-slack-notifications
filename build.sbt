@@ -5,7 +5,7 @@ ThisBuild / version := "0.1.0"
 
 lazy val root = (project in file("."))
   .settings(
-    name := "da-tre-fn-template",
+    name := "da-tre-fn-slack-notifications",
     libraryDependencies ++= Seq(
       lambdaRuntimeInterfaceClient
     ),

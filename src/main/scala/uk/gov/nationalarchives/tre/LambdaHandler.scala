@@ -1,16 +1,24 @@
 package uk.gov.nationalarchives.tre
 
-import com.amazonaws.services.lambda.runtime.events.{LambdaDestinationEvent, SNSEvent, SQSEvent}
+import com.amazonaws.services.lambda.runtime.events.SNSEvent
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 
-class LambdaHandler[Event]() extends RequestHandler[Event, Unit] {
+import scala.jdk.CollectionConverters.CollectionHasAsScala
 
-  override def handleRequest(event: Event, context: Context): Unit = {
-    event match {
-      case snsEvent: SNSEvent => SNSEventHandler.logEvent(snsEvent, context.getLogger)
-      case lambdaDestinationEvent: LambdaDestinationEvent => DestinationEventHandler.logEvent(lambdaDestinationEvent, context.getLogger)
-      case sqsEvent: SQSEvent => SQSEventHandler.logEvent(sqsEvent, context.getLogger)
-      case _=> throw new NotImplementedError(s"Unrecognised lambda event")
+
+class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
+
+  override def handleRequest(event: SNSEvent, context: Context): Unit = {
+    // 1. ValidateBag - post entry notification
+    // 2. RequestCourtDocumentParse - IF originator == FCL, post entry notification
+    // 3. CourtDocumentPackageAvailable - post exit notification
+    // 4. TREError - post error notification
+    event.getRecords.asScala.toList match {
+      case snsRecord :: Nil =>
+        context.getLogger.log(s"Received message: ${snsRecord.getSNS.getMessage}\n")
+        val messageType = MessageParsingUtils.parseGenericMessage(snsRecord.getSNS.getMessage).properties.messageType
+        println(s"Message type: $messageType")
+      case _ => throw new RuntimeException("Single record expected; zero or multiple received")
     }
   }
 }
