@@ -5,7 +5,6 @@ import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 
-
 class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
 
   override def handleRequest(event: SNSEvent, context: Context): Unit = {
@@ -16,8 +15,8 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
     event.getRecords.asScala.toList match {
       case snsRecord :: Nil =>
         context.getLogger.log(s"Received message: ${snsRecord.getSNS.getMessage}\n")
-        //val messageType = MessageParsingUtils.parseGenericMessage(snsRecord.getSNS.getMessage).properties.messageType
-        println(s"Message type: testing")
+        val messageType = MessageParsingUtils.parseGenericMessage(snsRecord.getSNS.getMessage).properties.messageType
+        println(s"Message type: $messageType")
       case _ => throw new RuntimeException("Single record expected; zero or multiple received")
     }
   }
