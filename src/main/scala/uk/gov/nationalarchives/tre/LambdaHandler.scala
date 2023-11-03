@@ -7,6 +7,8 @@ import io.circe.syntax.EncoderOps
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.HttpClients
+import uk.gov.nationalarchives.da.messages.courtdocumentpackage.available.Status.{COURT_DOCUMENT_PARSE_NO_ERRORS, COURT_DOCUMENT_PARSE_WITH_ERRORS}
+
 
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 import scala.sys.env
@@ -25,48 +27,67 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
         val messageString = snsRecord.getSNS.getMessage
         context.getLogger.log(s"Received message: $messageString\n")
         
-        val slackMessage: Map[String, String] = parseGenericMessage(messageString).properties.messageType match {
+        val slackMessage = parseGenericMessage(messageString).properties.messageType match {
           case "uk.gov.nationalarchives.tre.messages.bag.validate.BagValidate" => {
             val bagValidateMessage = parseBagValidate(messageString)
-            buildSlackMessage(
-              icon = ":wrench:",
+            val notifiable = buildSlackMessage(
+              icon = ":hourglass_flowing_sand:",
               reference = bagValidateMessage.parameters.reference,
               messageType = bagValidateMessage.properties.messageType,
               environment = environment
             )
+            Some(notifiable)
           }
           case "uk.gov.nationalarchives.da.messages.request.courtdocument.parse.RequestCourtDocumentParse" => {
             val requestCourtDocumentParseMessage = parseRequestCourtDocumentParse(messageString)
-            buildSlackMessage(
+            val notifiable = buildSlackMessage(
               icon = ":wrench:",
               reference = requestCourtDocumentParseMessage.parameters.reference,
               messageType = requestCourtDocumentParseMessage.properties.messageType,
               environment = environment
             )
+            Some(notifiable)
           }
           case "uk.gov.nationalarchives.da.messages.courtdocumentpackage.available.CourtDocumentPackageAvailable" => {
             val courtDocumentPackageAvailableMessage = parseCourtDocumentPackageAvailable(messageString)
-            buildSlackMessage(
-              icon = ":wrench:",
-              reference = courtDocumentPackageAvailableMessage.parameters.reference,
-              messageType = courtDocumentPackageAvailableMessage.properties.messageType,
-              status = Some(courtDocumentPackageAvailableMessage.parameters.status.toString),
-              environment = environment
-            )
+            val notifiable = courtDocumentPackageAvailableMessage.parameters.status match {
+              case COURT_DOCUMENT_PARSE_NO_ERRORS => buildSlackMessage(
+                icon = ":white_check_mark:",
+                reference = courtDocumentPackageAvailableMessage.parameters.reference,
+                messageType = courtDocumentPackageAvailableMessage.properties.messageType,
+                environment = environment,
+                status = Some(courtDocumentPackageAvailableMessage.parameters.status.toString)
+              )
+              case COURT_DOCUMENT_PARSE_WITH_ERRORS => buildSlackMessage(
+                icon = ":warning:",
+                reference = courtDocumentPackageAvailableMessage.parameters.reference,
+                messageType = courtDocumentPackageAvailableMessage.properties.messageType,
+                environment = environment,
+                status = Some(courtDocumentPackageAvailableMessage.parameters.status.toString)
+              )
+            }
+            Some(notifiable)
           }
-          case _ => 
-            buildSlackMessage(
-              icon = ":question",
-              reference = "unknown",
-              messageType = "unknown",
-              environment = environment
+          case "uk.gov.nationalarchives.tre.messages.treerror.TreError" => {
+            val treErrorMessage = parseTreError(messageString)
+            val notifiable = buildSlackMessage(
+              icon = ":interrobang",
+              reference = treErrorMessage.parameters.reference,
+              messageType = treErrorMessage.properties.messageType,
+              environment = environment,
+              errorMessage = treErrorMessage.parameters.errors
             )
+            Some(notifiable)
+          }
+          case _ => None
         }
-        val httpClient = HttpClients.createDefault()
-        val post = new HttpPost(webhookUrl)
-        post.setEntity(new StringEntity(slackMessage.asJson.toString()))
-        val response = httpClient.execute(post)
-        println(Map("message" -> slackMessage, "status_code" -> response.getStatusLine.getStatusCode, "response" -> response.getEntity.getContent))
+        slackMessage.foreach { message =>
+          val httpClient = HttpClients.createDefault()
+          val post = new HttpPost(webhookUrl)
+          post.setEntity(new StringEntity(message.asJson.toString()))
+          val response = httpClient.execute(post)
+          println(Map("message" -> slackMessage, "status_code" -> response.getStatusLine.getStatusCode, "response" -> response.getEntity.getContent))
+        }
       case _ => throw new RuntimeException("Single record expected; zero or multiple received")
     }
 
@@ -74,14 +95,16 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
       icon: String,
       reference: String,
       messageType: String,                   
+      environment: String,
       status: Option[String] = None,
-      environment: String
+      errorMessage: Option[String] = None                   
     ): Map[String, String] = {
-      val message = s"$icon Testing: $messageType message${status.map(s => s" with status $s")} received for reference $reference in environment $environment"
+      val message = s"$icon *MESSAGE RECEIVED*\n*Environment*: $environment\n*Reference*: $reference\n*Type*:$messageType\n${status.map(s => s"*Status*: $s\n").getOrElse("")}${errorMessage.map(e => s"*Error*: $e\n").getOrElse("")}"
       Map(
         "channel" -> defaults.channel,
         "username" -> defaults.username,
         "text" -> message,
+        "icon" -> icon
       )
     }
   }
