@@ -41,12 +41,12 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
           case "uk.gov.nationalarchives.da.messages.request.courtdocument.parse.RequestCourtDocumentParse" => {
             val requestCourtDocumentParseMessage = parseRequestCourtDocumentParse(messageString)
             val notifiable = buildSlackMessage(
-              icon = ":wrench:",
+              icon = ":hourglass_flowing_sand:",
               reference = requestCourtDocumentParseMessage.parameters.reference,
               messageType = requestCourtDocumentParseMessage.properties.messageType,
               environment = environment
             )
-            Some(notifiable)
+            if (requestCourtDocumentParseMessage.parameters.originator.contains("FCL")) Some(notifiable) else None
           }
           case "uk.gov.nationalarchives.da.messages.courtdocumentpackage.available.CourtDocumentPackageAvailable" => {
             val courtDocumentPackageAvailableMessage = parseCourtDocumentPackageAvailable(messageString)
@@ -99,7 +99,7 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
       status: Option[String] = None,
       errorMessage: Option[String] = None                   
     ): Map[String, String] = {
-      val message = s"$icon *MESSAGE RECEIVED*\n*Environment*: $environment\n*Reference*: $reference\n*Type*:$messageType\n${status.map(s => s"*Status*: $s\n").getOrElse("")}${errorMessage.map(e => s"*Error*: $e\n").getOrElse("")}"
+      val message = s"*MESSAGE RECEIVED* $icon\n*Environment*: `$environment`\n*Reference*: `$reference`\n*Type*: `$messageType`\n${status.map(s => s"*Status*: `$s`\n").getOrElse("")}${errorMessage.map(e => s"*Error*: ```$e```\n").getOrElse("")}"
       Map(
         "channel" -> defaults.channel,
         "username" -> defaults.username,
