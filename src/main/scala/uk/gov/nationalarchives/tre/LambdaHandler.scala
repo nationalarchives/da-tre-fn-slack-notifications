@@ -60,7 +60,7 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
             val courtDocumentPackageAvailableMessage = parseCourtDocumentPackageAvailable(messageString)
             val notifiable = courtDocumentPackageAvailableMessage.parameters.status match {
               case COURT_DOCUMENT_PARSE_NO_ERRORS => buildSlackMessage(
-                header = "Request Completed with Errors",
+                header = "Request Completed",
                 timestampString = courtDocumentPackageAvailableMessage.properties.timestamp,
                 icon = ":white_check_mark:",
                 reference = courtDocumentPackageAvailableMessage.parameters.reference,
@@ -69,7 +69,7 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
                 status = Some(courtDocumentPackageAvailableMessage.parameters.status.toString)
               )
               case COURT_DOCUMENT_PARSE_WITH_ERRORS => buildSlackMessage(
-                header = "REQUEST COMPLETE WITH ERRORS",
+                header = "Request Completed with Errors",
                 timestampString = courtDocumentPackageAvailableMessage.properties.timestamp,
                 icon = ":warning:",
                 reference = courtDocumentPackageAvailableMessage.parameters.reference,
@@ -83,7 +83,7 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
           case "uk.gov.nationalarchives.tre.messages.treerror.TreError" => {
             val treErrorMessage = parseTreError(messageString)
             val notifiable = buildSlackMessage(
-              header = "ERROR",
+              header = "Error",
               timestampString = treErrorMessage.properties.timestamp,
               icon = ":interrobang:",
               reference = treErrorMessage.parameters.reference,
