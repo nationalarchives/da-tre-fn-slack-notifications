@@ -119,7 +119,7 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
       val formattedTime = zonedTimestamp.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
 
       val message = s"""
-        |$icon *$header* ${reference.map(r => s"(`$r`)`").getOrElse("")}
+        |$icon *$header* ${reference.map(r => s"(`$r`)").getOrElse("")}
         |:stopwatch: `$formattedTime`
         |*Environment*: `$environment`
         |*Type*: `$messageType`
