@@ -82,7 +82,7 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
           case "uk.gov.nationalarchives.tre.messages.treerror.TreError" => {
             val treErrorMessage = parseTreError(messageString)
             val notifiable = buildSlackMessage(
-              header = "Error",
+              header = "TRE Error",
               timestampString = treErrorMessage.properties.timestamp,
               icon = ":interrobang:",
               messageType = treErrorMessage.properties.messageType,
@@ -117,16 +117,19 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
       val instant = Instant.parse(timestampString)
       val zonedTimestamp = instant.atZone(ZoneId.of("Europe/London"))
       val formattedTime = zonedTimestamp.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+      
+      val headerLine = s"$icon *$header* ${reference.map(r => s"(`$r`)").getOrElse("")}"
+      val timeLine = s":stopwatch: `$formattedTime`"
+      val environmentLine = s"*Environment*: `$environment`"
+      val typeLine = s"*Type*: `$messageType`"
+      val originatorLine = originator.map(o => s"*Originator*: `$o`").getOrElse("")
+      val statusLine = status.map(s => s"*Status*: `$s`").getOrElse("")
+      val errorMessageLine = errorMessage.map(e => s"*Error message*: ```$e```").getOrElse("")
 
-      val message = s"""
-        |$icon *$header* ${reference.map(r => s"(`$r`)").getOrElse("")}
-        |:stopwatch: `$formattedTime`
-        |*Environment*: `$environment`
-        |*Type*: `$messageType`
-        |${originator.map(o => s"*Originator*: `$o`\n").getOrElse("")}
-        |${status.map(s => s"*Status*: `$s`\n").getOrElse("")}
-        |${errorMessage.map(e => s"*Error*: ```$e```\n").getOrElse("")}
-      """.stripMargin
+      val message =  Seq(headerLine, timeLine, environmentLine, typeLine, originatorLine, statusLine, errorMessageLine)
+          .filter(_.nonEmpty)
+          .mkString("\n")
+
       Map(
         "channel" -> defaults.channel,
         "username" -> defaults.username,
