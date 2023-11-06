@@ -125,7 +125,7 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
         |:stopwatch: `$formattedTime`
         |*Environment*: `$environment`
         |*Type*: `$messageType`
-        |${originator.map(o => s"*Originator*: `$o.`\n").getOrElse("")}
+        |${originator.map(o => s"*Originator*: `$o`\n").getOrElse("")}
         |${status.map(s => s"*Status*: `$s`\n").getOrElse("")}
         |${errorMessage.map(e => s"*Error*: ```$e```\n").getOrElse("")}
       """.stripMargin
