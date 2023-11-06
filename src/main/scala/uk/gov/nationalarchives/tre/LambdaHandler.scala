@@ -7,8 +7,8 @@ import io.circe.syntax.EncoderOps
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.HttpClients
+import uk.gov.nationalarchives.common.messages.Producer
 import uk.gov.nationalarchives.da.messages.courtdocumentpackage.available.Status.{COURT_DOCUMENT_PARSE_NO_ERRORS, COURT_DOCUMENT_PARSE_WITH_ERRORS}
-
 
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 import scala.sys.env
@@ -31,20 +31,26 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
           case "uk.gov.nationalarchives.tre.messages.bag.validate.BagValidate" => {
             val bagValidateMessage = parseBagValidate(messageString)
             val notifiable = buildSlackMessage(
+              header = "REQUEST RECEIVED",
+              timestampString = bagValidateMessage.properties.timestamp,
               icon = ":hourglass_flowing_sand:",
               reference = bagValidateMessage.parameters.reference,
               messageType = bagValidateMessage.properties.messageType,
-              environment = environment
+              environment = environment,
+              producer = Some(bagValidateMessage.properties.producer)
             )
             Some(notifiable)
           }
           case "uk.gov.nationalarchives.da.messages.request.courtdocument.parse.RequestCourtDocumentParse" => {
             val requestCourtDocumentParseMessage = parseRequestCourtDocumentParse(messageString)
             val notifiable = buildSlackMessage(
+              header = "REQUEST RECEIVED",
+              timestampString = requestCourtDocumentParseMessage.properties.timestamp,
               icon = ":hourglass_flowing_sand:",
               reference = requestCourtDocumentParseMessage.parameters.reference,
               messageType = requestCourtDocumentParseMessage.properties.messageType,
-              environment = environment
+              environment = environment,
+              producer = Some(requestCourtDocumentParseMessage.properties.producer)
             )
             if (requestCourtDocumentParseMessage.parameters.originator.contains("FCL")) Some(notifiable) else None
           }
@@ -52,6 +58,8 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
             val courtDocumentPackageAvailableMessage = parseCourtDocumentPackageAvailable(messageString)
             val notifiable = courtDocumentPackageAvailableMessage.parameters.status match {
               case COURT_DOCUMENT_PARSE_NO_ERRORS => buildSlackMessage(
+                header = "REQUEST COMPLETE",
+                timestampString = courtDocumentPackageAvailableMessage.properties.timestamp,
                 icon = ":white_check_mark:",
                 reference = courtDocumentPackageAvailableMessage.parameters.reference,
                 messageType = courtDocumentPackageAvailableMessage.properties.messageType,
@@ -59,6 +67,8 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
                 status = Some(courtDocumentPackageAvailableMessage.parameters.status.toString)
               )
               case COURT_DOCUMENT_PARSE_WITH_ERRORS => buildSlackMessage(
+                header = "REQUEST COMPLETE WITH ERRORS",
+                timestampString = courtDocumentPackageAvailableMessage.properties.timestamp,
                 icon = ":warning:",
                 reference = courtDocumentPackageAvailableMessage.parameters.reference,
                 messageType = courtDocumentPackageAvailableMessage.properties.messageType,
@@ -71,7 +81,9 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
           case "uk.gov.nationalarchives.tre.messages.treerror.TreError" => {
             val treErrorMessage = parseTreError(messageString)
             val notifiable = buildSlackMessage(
-              icon = ":interrobang",
+              header = "ERROR",
+              timestampString = treErrorMessage.properties.timestamp,
+              icon = ":interrobang:",
               reference = treErrorMessage.parameters.reference,
               messageType = treErrorMessage.properties.messageType,
               environment = environment,
@@ -92,14 +104,27 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
     }
 
     def buildSlackMessage(
+      header: String,
+      timestampString: String,
       icon: String,
       reference: String,
       messageType: String,                   
       environment: String,
       status: Option[String] = None,
-      errorMessage: Option[String] = None                   
+      errorMessage: Option[String] = None,
+      producer: Option[Producer.Value] = None                   
     ): Map[String, String] = {
-      val message = s"*MESSAGE RECEIVED* $icon\n*Environment*: `$environment`\n*Reference*: `$reference`\n*Type*: `$messageType`\n${status.map(s => s"*Status*: `$s`\n").getOrElse("")}${errorMessage.map(e => s"*Error*: ```$e```\n").getOrElse("")}"
+      val timestamp = java.time.LocalDateTime.parse(timestampString)
+      val formattedTime = timestamp.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"))
+      val message = s"""
+        |$icon *header* (`$reference`)
+        |:stopwatch: $formattedTime
+        |*Environment*: `$environment`
+        |*Type*: `$messageType`
+        |${producer.map(p => s"*Producer*: `${p.toString}`\\n").getOrElse("")}
+        |${status.map(s => s"*Status*: `$s`\\n").getOrElse("")}
+        |${errorMessage.map(e => s"*Error*: ```$e```\\n").getOrElse("")}
+      """.stripMargin
       Map(
         "channel" -> defaults.channel,
         "username" -> defaults.username,
