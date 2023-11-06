@@ -7,7 +7,6 @@ import io.circe.syntax.EncoderOps
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.HttpClients
-import uk.gov.nationalarchives.common.messages.Producer
 import uk.gov.nationalarchives.da.messages.courtdocumentpackage.available.Status.{COURT_DOCUMENT_PARSE_NO_ERRORS, COURT_DOCUMENT_PARSE_WITH_ERRORS}
 
 import java.time.format.DateTimeFormatter
@@ -30,16 +29,16 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
         context.getLogger.log(s"Received message: $messageString\n")
         
         val slackMessage = parseGenericMessage(messageString).properties.messageType match {
-          case "uk.gov.nationalarchives.tre.messages.bag.validate.BagValidate" => {
-            val bagValidateMessage = parseBagValidate(messageString)
+          case "uk.gov.nationalarchives.da.messages.bag.available.BagAvailable" => {
+            val bagAvailableMessage = parseBagAvailable(messageString)
             val notifiable = buildSlackMessage(
               header = "Request Received",
-              timestampString = bagValidateMessage.properties.timestamp,
+              timestampString = bagAvailableMessage.properties.timestamp,
               icon = ":hourglass_flowing_sand:",
-              reference = bagValidateMessage.parameters.reference,
-              messageType = bagValidateMessage.properties.messageType,
+              reference = Some(bagAvailableMessage.parameters.reference),
+              messageType = bagAvailableMessage.properties.messageType,
               environment = environment,
-              originator = bagValidateMessage.parameters.originator
+              originator = bagAvailableMessage.parameters.originator
             )
             Some(notifiable)
           }
@@ -49,7 +48,7 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
               header = "Request Received",
               timestampString = requestCourtDocumentParseMessage.properties.timestamp,
               icon = ":hourglass_flowing_sand:",
-              reference = requestCourtDocumentParseMessage.parameters.reference,
+              reference = Some(requestCourtDocumentParseMessage.parameters.reference),
               messageType = requestCourtDocumentParseMessage.properties.messageType,
               environment = environment,
               originator = requestCourtDocumentParseMessage.parameters.originator
@@ -63,7 +62,7 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
                 header = "Request Completed",
                 timestampString = courtDocumentPackageAvailableMessage.properties.timestamp,
                 icon = ":white_check_mark:",
-                reference = courtDocumentPackageAvailableMessage.parameters.reference,
+                reference = Some(courtDocumentPackageAvailableMessage.parameters.reference),
                 messageType = courtDocumentPackageAvailableMessage.properties.messageType,
                 environment = environment,
                 status = Some(courtDocumentPackageAvailableMessage.parameters.status.toString)
@@ -72,7 +71,7 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
                 header = "Request Completed with Errors",
                 timestampString = courtDocumentPackageAvailableMessage.properties.timestamp,
                 icon = ":warning:",
-                reference = courtDocumentPackageAvailableMessage.parameters.reference,
+                reference = Some(courtDocumentPackageAvailableMessage.parameters.reference),
                 messageType = courtDocumentPackageAvailableMessage.properties.messageType,
                 environment = environment,
                 status = Some(courtDocumentPackageAvailableMessage.parameters.status.toString)
@@ -86,7 +85,6 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
               header = "Error",
               timestampString = treErrorMessage.properties.timestamp,
               icon = ":interrobang:",
-              reference = treErrorMessage.parameters.reference,
               messageType = treErrorMessage.properties.messageType,
               environment = environment,
               errorMessage = treErrorMessage.parameters.errors
@@ -109,7 +107,7 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
        header: String,
        timestampString: String,
        icon: String,
-       reference: String,
+       reference: Option[String] = None,
        messageType: String,
        environment: String,
        status: Option[String] = None,
@@ -121,7 +119,7 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
       val formattedTime = zonedTimestamp.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
 
       val message = s"""
-        |$icon *$header* (`$reference`)
+        |$icon *$header* ${reference.map(r => s"(`$r`)`").getOrElse("")}
         |:stopwatch: `$formattedTime`
         |*Environment*: `$environment`
         |*Type*: `$messageType`

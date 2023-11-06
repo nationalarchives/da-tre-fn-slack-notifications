@@ -3,9 +3,9 @@ package uk.gov.nationalarchives.tre
 import io.circe.generic.auto._
 import io.circe.{Decoder, parser}
 import uk.gov.nationalarchives.common.messages.{Producer, Properties}
+import uk.gov.nationalarchives.da.messages.bag.available.{BagAvailable, ConsignmentType}
 import uk.gov.nationalarchives.da.messages.courtdocumentpackage.available.{CourtDocumentPackageAvailable, Status => CDPAStatus}
 import uk.gov.nationalarchives.da.messages.request.courtdocument.parse.RequestCourtDocumentParse
-import uk.gov.nationalarchives.tre.messages.bag.validate.{BagValidate, ConsignmentType}
 import uk.gov.nationalarchives.tre.messages.treerror.{TreError, Status => TEStatus}
 
 object MessageParsingUtils {
@@ -17,8 +17,8 @@ object MessageParsingUtils {
   def parseGenericMessage(message: String): GenericMessage =
     parser.decode[GenericMessage](message).fold(error => throw new RuntimeException(error), identity)
 
-  def parseBagValidate(message: String): BagValidate =
-    parser.decode[BagValidate](message).fold(error => throw new RuntimeException(error), identity)
+  def parseBagAvailable(message: String): BagAvailable =
+    parser.decode[BagAvailable](message).fold(error => throw new RuntimeException(error), identity)
 
   def parseRequestCourtDocumentParse(message: String): RequestCourtDocumentParse =
     parser.decode[RequestCourtDocumentParse](message).fold(error => throw new RuntimeException(error), identity)

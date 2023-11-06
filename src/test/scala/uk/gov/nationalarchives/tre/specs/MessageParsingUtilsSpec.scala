@@ -8,7 +8,7 @@ import uk.gov.nationalarchives.da.messages.courtdocumentpackage.available.{Court
 import uk.gov.nationalarchives.da.messages.request.courtdocument.parse.{ParserInstructions, RequestCourtDocumentParse, Parameters => RCDPParameters}
 import uk.gov.nationalarchives.tre.GenericMessage
 import uk.gov.nationalarchives.tre.MessageParsingUtils._
-import uk.gov.nationalarchives.tre.messages.bag.validate.{BagValidate, ConsignmentType, Parameters => BVParameters}
+import uk.gov.nationalarchives.da.messages.bag.available.{BagAvailable, ConsignmentType, Parameters => BAParameters}
 
 class MessageParsingUtilsSpec extends AnyFlatSpec with MockitoSugar {
 
@@ -46,43 +46,45 @@ class MessageParsingUtilsSpec extends AnyFlatSpec with MockitoSugar {
     )
   }
   
-  it should "parse a valid BagValidate message " in {
+  it should "parse a valid BagAvailable message " in {
     val testMessage =
       """
         |{
-        |    "properties": {
-        |        "messageType": "uk.gov.nationalarchives.tre.messages.bag.validate.BagValidate",
-        |        "timestamp": "2023-11-03T10:46:26.950217Z",
-        |        "function": "pte-ah-tre-vb-bag-files-validation",
-        |        "producer": "TRE",
-        |        "executionId": "41dbe9d9-c02b-4279-9275-66707fc81236",
-        |        "parentExecutionId": ""
-        |    },
-        |    "parameters": {
-        |        "reference": "TDR-2021-CF6L",
-        |        "consignmentType": "COURT_DOCUMENT",
-        |        "s3Bucket": "pte-ah-tre-common-data",
-        |        "s3ObjectRoot": "TDR-2021-CF6L/41dbe9d9-c02b-4279-9275-66707fc81236/TDR-2021-CF6L",
-        |        "originator": "TDR"
-        |    }
-        |}
+        |	  "properties" : {
+        |	      "messageType" : "uk.gov.nationalarchives.da.messages.bag.available.BagAvailable",
+        |       "timestamp" : "2023-11-06T15:15:08.443071Z",
+        |		    "function" : "",
+        |	      "producer" : "TDR",
+        |	      "executionId" : "",
+        |       "parentExecutionId" : null
+        |	  },
+        |	  "parameters" : {
+        |	      "reference" : "TDR-2021-CF6L",
+        |	      "originator" : "TDR",
+        |	      "consignmentType" : "COURT_DOCUMENT",
+        |	    	"s3Bucket" : "da-transform-sample-data",
+        |	      "s3BagKey" : "dc34c025-ca5c-4746-b89a-a05bb451d344/sample-data/judgment/tdr-bag/TDR-2021-CF6L.tar.gz",
+        |	      "s3BagSha256Key" : "TDR-2021-CF6L.tar.gz.sha256"
+        |	  }
+        |} 
         |""".stripMargin
 
-    parseBagValidate(testMessage) shouldBe BagValidate(
+    parseBagAvailable(testMessage) shouldBe BagAvailable(
       properties = Properties(
-        messageType = "uk.gov.nationalarchives.tre.messages.bag.validate.BagValidate", 
-        timestamp = "2023-11-03T10:46:26.950217Z", 
-        function = "pte-ah-tre-vb-bag-files-validation", 
-        producer = Producer.TRE, 
-        executionId = "41dbe9d9-c02b-4279-9275-66707fc81236", 
-        parentExecutionId = Some("")
+        messageType = "uk.gov.nationalarchives.da.messages.bag.available.BagAvailable", 
+        timestamp = "2023-11-06T15:15:08.443071Z", 
+        function = "", 
+        producer = Producer.TDR, 
+        executionId = "", 
+        parentExecutionId = None
       ),
-      parameters = BVParameters(
+      parameters = BAParameters(
         reference = "TDR-2021-CF6L", 
         consignmentType = ConsignmentType.COURT_DOCUMENT, 
         originator = Some("TDR"), 
-        s3Bucket = "pte-ah-tre-common-data", 
-        s3ObjectRoot = "TDR-2021-CF6L/41dbe9d9-c02b-4279-9275-66707fc81236/TDR-2021-CF6L"
+        s3Bucket = "da-transform-sample-data", 
+        s3BagKey = "dc34c025-ca5c-4746-b89a-a05bb451d344/sample-data/judgment/tdr-bag/TDR-2021-CF6L.tar.gz", 
+        s3BagSha256Key = "TDR-2021-CF6L.tar.gz.sha256"
       )
     )
   }
