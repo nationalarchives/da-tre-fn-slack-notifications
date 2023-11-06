@@ -10,6 +10,8 @@ import org.apache.http.impl.client.HttpClients
 import uk.gov.nationalarchives.common.messages.Producer
 import uk.gov.nationalarchives.da.messages.courtdocumentpackage.available.Status.{COURT_DOCUMENT_PARSE_NO_ERRORS, COURT_DOCUMENT_PARSE_WITH_ERRORS}
 
+import java.time.format.DateTimeFormatter
+import java.time.{Instant, ZoneId}
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 import scala.sys.env
 
@@ -114,8 +116,10 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
       errorMessage: Option[String] = None,
       producer: Option[Producer.Value] = None                   
     ): Map[String, String] = {
-      val timestamp = java.time.LocalDateTime.parse(timestampString)
-      val formattedTime = timestamp.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"))
+      val instant = Instant.parse(timestampString)
+      val zonedTimestamp = instant.atZone(ZoneId.of("Europe/London"))
+      val formattedTime = zonedTimestamp.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+
       val message = s"""
         |$icon *header* (`$reference`)
         |:stopwatch: $formattedTime
