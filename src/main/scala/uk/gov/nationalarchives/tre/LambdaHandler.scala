@@ -33,26 +33,26 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
           case "uk.gov.nationalarchives.tre.messages.bag.validate.BagValidate" => {
             val bagValidateMessage = parseBagValidate(messageString)
             val notifiable = buildSlackMessage(
-              header = "REQUEST RECEIVED",
+              header = "Request Received",
               timestampString = bagValidateMessage.properties.timestamp,
               icon = ":hourglass_flowing_sand:",
               reference = bagValidateMessage.parameters.reference,
               messageType = bagValidateMessage.properties.messageType,
               environment = environment,
-              producer = Some(bagValidateMessage.properties.producer)
+              originator = bagValidateMessage.parameters.originator
             )
             Some(notifiable)
           }
           case "uk.gov.nationalarchives.da.messages.request.courtdocument.parse.RequestCourtDocumentParse" => {
             val requestCourtDocumentParseMessage = parseRequestCourtDocumentParse(messageString)
             val notifiable = buildSlackMessage(
-              header = "REQUEST RECEIVED",
+              header = "Request Received",
               timestampString = requestCourtDocumentParseMessage.properties.timestamp,
               icon = ":hourglass_flowing_sand:",
               reference = requestCourtDocumentParseMessage.parameters.reference,
               messageType = requestCourtDocumentParseMessage.properties.messageType,
               environment = environment,
-              producer = Some(requestCourtDocumentParseMessage.properties.producer)
+              originator = requestCourtDocumentParseMessage.parameters.originator
             )
             if (requestCourtDocumentParseMessage.parameters.originator.contains("FCL")) Some(notifiable) else None
           }
@@ -60,7 +60,7 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
             val courtDocumentPackageAvailableMessage = parseCourtDocumentPackageAvailable(messageString)
             val notifiable = courtDocumentPackageAvailableMessage.parameters.status match {
               case COURT_DOCUMENT_PARSE_NO_ERRORS => buildSlackMessage(
-                header = "REQUEST COMPLETE",
+                header = "Request Completed with Errors",
                 timestampString = courtDocumentPackageAvailableMessage.properties.timestamp,
                 icon = ":white_check_mark:",
                 reference = courtDocumentPackageAvailableMessage.parameters.reference,
@@ -106,28 +106,28 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
     }
 
     def buildSlackMessage(
-      header: String,
-      timestampString: String,
-      icon: String,
-      reference: String,
-      messageType: String,                   
-      environment: String,
-      status: Option[String] = None,
-      errorMessage: Option[String] = None,
-      producer: Option[Producer.Value] = None                   
+       header: String,
+       timestampString: String,
+       icon: String,
+       reference: String,
+       messageType: String,
+       environment: String,
+       status: Option[String] = None,
+       errorMessage: Option[String] = None,
+       originator: Option[String] = None                   
     ): Map[String, String] = {
       val instant = Instant.parse(timestampString)
       val zonedTimestamp = instant.atZone(ZoneId.of("Europe/London"))
       val formattedTime = zonedTimestamp.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
 
       val message = s"""
-        |$icon *header* (`$reference`)
-        |:stopwatch: $formattedTime
+        |$icon *$header* (`$reference`)
+        |:stopwatch: `$formattedTime`
         |*Environment*: `$environment`
         |*Type*: `$messageType`
-        |${producer.map(p => s"*Producer*: `${p.toString}`\\n").getOrElse("")}
-        |${status.map(s => s"*Status*: `$s`\\n").getOrElse("")}
-        |${errorMessage.map(e => s"*Error*: ```$e```\\n").getOrElse("")}
+        |${originator.map(o => s"*Originator*: `$o.`\n").getOrElse("")}
+        |${status.map(s => s"*Status*: `$s`\n").getOrElse("")}
+        |${errorMessage.map(e => s"*Error*: ```$e```\n").getOrElse("")}
       """.stripMargin
       Map(
         "channel" -> defaults.channel,
