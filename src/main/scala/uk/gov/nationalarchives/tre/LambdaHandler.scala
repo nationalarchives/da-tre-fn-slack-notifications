@@ -6,7 +6,7 @@ import MessageParsingUtils._
 import io.circe.syntax.EncoderOps
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.StringEntity
-import org.apache.http.impl.client.HttpClients
+import org.apache.http.impl.client.{CloseableHttpClient, HttpClients}
 import uk.gov.nationalarchives.da.messages.courtdocumentpackage.available.Status.{COURT_DOCUMENT_PARSE_NO_ERRORS, COURT_DOCUMENT_PARSE_WITH_ERRORS}
 
 import java.time.format.DateTimeFormatter
@@ -21,15 +21,13 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
     val environment = env("ENV")
     val channel = env("SLACK_CHANNEL")
     val username = env("SLACK_USERNAME")
-    val notifiableSlackEndpointsOnError = env("NOTIFIABLE_SLACK_ENDPOINTS_ON_ERROR")
-
-    val defaults = SlackDefaults(channel, username)
+    val notifiableSlackEndpointsOnError = parseStringMap(env("NOTIFIABLE_SLACK_ENDPOINTS_ON_ERROR"))
+    val httpClient = HttpClients.createDefault()
 
     event.getRecords.asScala.toList match {
       case snsRecord :: Nil =>
         val messageString = snsRecord.getSNS.getMessage
         context.getLogger.log(s"Received message: $messageString\n")
-        context.getLogger.log(s"Notifiable slack endpoints on error: $notifiableSlackEndpointsOnError\n")
 
         val slackMessage = parseGenericMessage(messageString).properties.messageType match {
           case "uk.gov.nationalarchives.da.messages.bag.available.BagAvailable" => {
@@ -92,17 +90,12 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
               environment = environment,
               errorMessage = treErrorMessage.parameters.errors
             )
+            notifiableSlackEndpointsOnError.foreach { case (c, wh) => postMessage(wh, notifiable, c, "annie-is-testing") }
             Some(notifiable)
           }
           case _ => None
         }
-        slackMessage.foreach { message =>
-          val httpClient = HttpClients.createDefault()
-          val post = new HttpPost(webhookUrl)
-          post.setEntity(new StringEntity(message.asJson.toString()))
-          val response = httpClient.execute(post)
-          println(Map("message" -> slackMessage, "status_code" -> response.getStatusLine.getStatusCode, "response" -> response.getEntity.getContent))
-        }
+        slackMessage.foreach { m => postMessage(webhookUrl, m, channel, username) }
       case _ => throw new RuntimeException("Single record expected; zero or multiple received")
     }
 
@@ -115,8 +108,8 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
        environment: String,
        status: Option[String] = None,
        errorMessage: Option[String] = None,
-       originator: Option[String] = None                   
-    ): Map[String, String] = {
+       originator: Option[String] = None,
+    ): String = {
       val instant = Instant.parse(timestampString)
       val zonedTimestamp = instant.atZone(ZoneId.of("Europe/London"))
       val formattedTime = zonedTimestamp.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
@@ -129,17 +122,26 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
       val statusLine = status.map(s => s"*Status*: `$s`").getOrElse("")
       val errorMessageLine = errorMessage.map(e => s"*Error message*: ```$e```").getOrElse("")
 
-      val message =  Seq(headerLine, timeLine, environmentLine, typeLine, originatorLine, statusLine, errorMessageLine)
+      Seq(headerLine, timeLine, environmentLine, typeLine, originatorLine, statusLine, errorMessageLine)
           .filter(_.nonEmpty)
           .mkString("\n")
+    }
 
+    def postMessage(
+      webhookUrl: String, 
+      message: String,
+      channel: String,
+      username: String
+   ): Unit = {
       Map(
-        "channel" -> defaults.channel,
-        "username" -> defaults.username,
+        "channel" -> channel,
+        "username" -> username,
         "text" -> message,
-        "icon" -> icon
       )
+      val post = new HttpPost(webhookUrl)
+      post.setEntity(new StringEntity(message.asJson.toString()))
+      val response = httpClient.execute(post)
+      println(Map("message" -> message, "status_code" -> response.getStatusLine.getStatusCode, "response" -> response.getEntity.getContent))
     }
   }
-  case class SlackDefaults(channel: String, username: String)
 }

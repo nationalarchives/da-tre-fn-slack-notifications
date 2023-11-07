@@ -28,5 +28,9 @@ object MessageParsingUtils {
     
   def parseTreError(message: String): TreError =
     parser.decode[TreError](message).fold(error => throw new RuntimeException(error), identity)
+    
+  def parseStringMap(jsonString: String): Map[String, String] =
+    parser.decode[Map[String, String]](jsonString).fold(error => throw new RuntimeException(error), identity)
+
 }
 case class GenericMessage(properties: Properties)

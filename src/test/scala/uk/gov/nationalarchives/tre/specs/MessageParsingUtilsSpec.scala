@@ -178,4 +178,12 @@ class MessageParsingUtilsSpec extends AnyFlatSpec with MockitoSugar {
       )
     )
   }
+  
+  it should "parse a json like env var with a notifiable channel/webhook pair" in {
+    parseStringMap("""{"channel_name":"webhook_url"}""") shouldBe Map("channel_name" -> "webhook_url")
+  }
+
+  it should "parse an empty map of notifiables" in {
+    parseStringMap("{}") shouldBe Map.empty
+  }
 }
