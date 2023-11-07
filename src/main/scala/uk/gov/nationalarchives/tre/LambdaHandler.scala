@@ -21,13 +21,16 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
     val environment = env("ENV")
     val channel = env("SLACK_CHANNEL")
     val username = env("SLACK_USERNAME")
+    val notifiableSlackEndpointsOnError = env("NOTIFIABLE_SLACK_ENDPOINTS_ON_ERROR")
+
     val defaults = SlackDefaults(channel, username)
 
     event.getRecords.asScala.toList match {
       case snsRecord :: Nil =>
         val messageString = snsRecord.getSNS.getMessage
         context.getLogger.log(s"Received message: $messageString\n")
-        
+        context.getLogger.log(s"Notifiable slack endpoints on error: $notifiableSlackEndpointsOnError\n")
+
         val slackMessage = parseGenericMessage(messageString).properties.messageType match {
           case "uk.gov.nationalarchives.da.messages.bag.available.BagAvailable" => {
             val bagAvailableMessage = parseBagAvailable(messageString)
