@@ -113,7 +113,7 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
       val instant = Instant.parse(timestampString)
       val zonedTimestamp = instant.atZone(ZoneId.of("Europe/London"))
       val formattedTime = zonedTimestamp.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
-      
+
       val headerLine = s"$icon *$header* ${reference.map(r => s"(`$r`)").getOrElse("")}"
       val timeLine = s":stopwatch: `$formattedTime`"
       val environmentLine = s"*Environment*: `$environment`"
@@ -128,7 +128,7 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
     }
 
     def postMessage(
-      webhookUrl: String, 
+      webhookUrl: String,
       message: String,
       channel: String,
       username: String

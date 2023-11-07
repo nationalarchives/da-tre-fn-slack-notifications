@@ -45,7 +45,7 @@ class MessageParsingUtilsSpec extends AnyFlatSpec with MockitoSugar {
       )
     )
   }
-  
+
   it should "parse a valid BagAvailable message " in {
     val testMessage =
       """
@@ -66,29 +66,29 @@ class MessageParsingUtilsSpec extends AnyFlatSpec with MockitoSugar {
         |	      "s3BagKey" : "dc34c025-ca5c-4746-b89a-a05bb451d344/sample-data/judgment/tdr-bag/TDR-2021-CF6L.tar.gz",
         |	      "s3BagSha256Key" : "TDR-2021-CF6L.tar.gz.sha256"
         |	  }
-        |} 
+        |}
         |""".stripMargin
 
     parseBagAvailable(testMessage) shouldBe BagAvailable(
       properties = Properties(
-        messageType = "uk.gov.nationalarchives.da.messages.bag.available.BagAvailable", 
-        timestamp = "2023-11-06T15:15:08.443071Z", 
-        function = "", 
-        producer = Producer.TDR, 
-        executionId = "", 
+        messageType = "uk.gov.nationalarchives.da.messages.bag.available.BagAvailable",
+        timestamp = "2023-11-06T15:15:08.443071Z",
+        function = "",
+        producer = Producer.TDR,
+        executionId = "",
         parentExecutionId = None
       ),
       parameters = BAParameters(
-        reference = "TDR-2021-CF6L", 
-        consignmentType = ConsignmentType.COURT_DOCUMENT, 
-        originator = Some("TDR"), 
-        s3Bucket = "da-transform-sample-data", 
-        s3BagKey = "dc34c025-ca5c-4746-b89a-a05bb451d344/sample-data/judgment/tdr-bag/TDR-2021-CF6L.tar.gz", 
+        reference = "TDR-2021-CF6L",
+        consignmentType = ConsignmentType.COURT_DOCUMENT,
+        originator = Some("TDR"),
+        s3Bucket = "da-transform-sample-data",
+        s3BagKey = "dc34c025-ca5c-4746-b89a-a05bb451d344/sample-data/judgment/tdr-bag/TDR-2021-CF6L.tar.gz",
         s3BagSha256Key = "TDR-2021-CF6L.tar.gz.sha256"
       )
     )
   }
-  
+
   it should "parse a valid RequestCourtDocumentParse message" in {
     val testMessage =
       """
@@ -110,7 +110,7 @@ class MessageParsingUtilsSpec extends AnyFlatSpec with MockitoSugar {
         |	  	  },
         |		    "s3Key" : "e7ef7e6d-4cbc-4594-a68e-aab1b08f7498/sample-data/judgment/fcl-docx/eat_2022_1.docx"
         |	  }
-        |	} 
+        |	}
         |""".stripMargin
 
     parseRequestCourtDocumentParse(testMessage) shouldBe RequestCourtDocumentParse(
@@ -133,7 +133,7 @@ class MessageParsingUtilsSpec extends AnyFlatSpec with MockitoSugar {
       )
     )
   }
-  
+
   it should "parse a valid CourtDocumentPackageAvailable message" in {
     val testMessage =
       """
@@ -168,17 +168,17 @@ class MessageParsingUtilsSpec extends AnyFlatSpec with MockitoSugar {
         timestamp = "2023-11-03T10:46:37.285978Z"
       ),
       parameters = CDPAParameters(
-        reference = "TDR-2021-CF6L", 
-        originator = Some("TDR"), 
-        s3Bucket = "pte-ah-tre-court-document-pack-out", 
-        s3Key = "TDR-2021-CF6L/2443a118-f960-46f0-91e8-64baa1c9c84b/TRE-TDR-2021-CF6L.tar.gz", 
-        metadataFilePath = "/metadata.json", 
-        metadataFileType = "Json", 
+        reference = "TDR-2021-CF6L",
+        originator = Some("TDR"),
+        s3Bucket = "pte-ah-tre-court-document-pack-out",
+        s3Key = "TDR-2021-CF6L/2443a118-f960-46f0-91e8-64baa1c9c84b/TRE-TDR-2021-CF6L.tar.gz",
+        metadataFilePath = "/metadata.json",
+        metadataFileType = "Json",
         status = Status.COURT_DOCUMENT_PARSE_NO_ERRORS
       )
     )
   }
-  
+
   it should "parse a json like env var with a notifiable channel/webhook pair" in {
     parseStringMap("""{"channel_name":"webhook_url"}""") shouldBe Map("channel_name" -> "webhook_url")
   }
