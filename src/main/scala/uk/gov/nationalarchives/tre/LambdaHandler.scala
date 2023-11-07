@@ -133,13 +133,13 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
       channel: String,
       username: String
    ): Unit = {
-      Map(
+      val slackMessage = Map(
         "channel" -> channel,
         "username" -> username,
         "text" -> message,
       )
       val post = new HttpPost(webhookUrl)
-      post.setEntity(new StringEntity(message.asJson.toString()))
+      post.setEntity(new StringEntity(slackMessage.asJson.toString()))
       val response = httpClient.execute(post)
       println(Map("message" -> message, "status_code" -> response.getStatusLine.getStatusCode, "response" -> response.getEntity.getContent))
     }
