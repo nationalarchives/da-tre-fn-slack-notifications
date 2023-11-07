@@ -6,7 +6,7 @@ import MessageParsingUtils._
 import io.circe.syntax.EncoderOps
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.StringEntity
-import org.apache.http.impl.client.{CloseableHttpClient, HttpClients}
+import org.apache.http.impl.client. HttpClients
 import uk.gov.nationalarchives.da.messages.courtdocumentpackage.available.Status.{COURT_DOCUMENT_PARSE_NO_ERRORS, COURT_DOCUMENT_PARSE_WITH_ERRORS}
 
 import java.time.format.DateTimeFormatter
@@ -90,7 +90,7 @@ class LambdaHandler() extends RequestHandler[SNSEvent, Unit] {
               environment = environment,
               errorMessage = treErrorMessage.parameters.errors
             )
-            notifiableSlackEndpointsOnError.foreach { case (c, wh) => postMessage(wh, notifiable, c, "annie-is-testing") }
+            notifiableSlackEndpointsOnError.foreach { case (c, wh) => postMessage(wh, notifiable, c, username) }
             Some(notifiable)
           }
           case _ => None
