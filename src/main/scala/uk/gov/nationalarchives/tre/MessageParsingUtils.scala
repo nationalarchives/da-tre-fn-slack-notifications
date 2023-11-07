@@ -14,15 +14,6 @@ object MessageParsingUtils {
   implicit val courtDocumentPackageAvailableStatusDecoder: Decoder[CDPAStatus.Value] = Decoder.decodeEnumeration(CDPAStatus)
   implicit val treErrorStatusDecoder: Decoder[TEStatus.Value] = Decoder.decodeEnumeration(TEStatus)
 
-  implicit val decodeTreParameters: Decoder[Parameters] = (c: HCursor) => for {
-    status <- c.downField("status").as[uk.gov.nationalarchives.tre.messages.treerror.Status.Value]
-    originator <- c.downField("originator").as[Option[String]]
-    reference <- c.downField("reference").as[String]
-    errors <- c.downField("errors").as[Option[String]](Decoder.decodeOption(Decoder.decodeString))
-  } yield {
-    uk.gov.nationalarchives.tre.messages.treerror.Parameters(status, originator, reference, errors)
-  }
-
   def parseGenericMessage(message: String): GenericMessage =
     parser.decode[GenericMessage](message).fold(error => throw new RuntimeException(error), identity)
 
