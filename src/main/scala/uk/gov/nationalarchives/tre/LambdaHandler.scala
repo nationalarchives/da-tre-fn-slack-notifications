@@ -3,14 +3,7 @@ package uk.gov.nationalarchives.tre
 import com.amazonaws.services.lambda.runtime.events.SNSEvent
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import MessageParsingUtils._
-import io.circe.syntax.EncoderOps
-import org.apache.http.client.methods.HttpPost
-import org.apache.http.entity.StringEntity
-import org.apache.http.impl.client. HttpClients
-import uk.gov.nationalarchives.da.messages.courtdocumentpackage.available.Status.{COURT_DOCUMENT_PARSE_NO_ERRORS, COURT_DOCUMENT_PARSE_WITH_ERRORS}
-
-import java.time.format.DateTimeFormatter
-import java.time.{Instant, ZoneId}
+import org.apache.http.impl.client.HttpClients
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 import scala.sys.env
 import MessageBuilder._
