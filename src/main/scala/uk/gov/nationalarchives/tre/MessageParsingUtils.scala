@@ -14,6 +14,16 @@ object MessageParsingUtils {
   implicit val courtDocumentPackageAvailableStatusDecoder: Decoder[CDPAStatus.Value] = Decoder.decodeEnumeration(CDPAStatus)
   implicit val treErrorStatusDecoder: Decoder[TEStatus.Value] = Decoder.decodeEnumeration(TEStatus)
 
+  implicit val decodeTreParameters: Decoder[Parameters] = (c: HCursor) => for {
+    status <- c.downField("status").as[TEStatus.Value]
+    originator <- c.downField("originator").as[Option[String]]
+    reference <- c.downField("reference").as[String]
+    errors = {
+      val errorsCursor = c.downField("errors")
+      errorsCursor.as[Option[String]].fold(_ => errorsCursor.focus.map(_.toString), identity)
+    }
+  } yield Parameters(status, originator, reference, errors)
+  
   def parseGenericMessage(message: String): GenericMessage =
     parser.decode[GenericMessage](message).fold(error => throw new RuntimeException(error), identity)
 
