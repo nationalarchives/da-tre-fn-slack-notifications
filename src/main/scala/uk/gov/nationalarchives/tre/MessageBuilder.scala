@@ -118,7 +118,7 @@ sealed trait RequestStatus {
 
 case object Received extends RequestStatus {
   val header = "Request Received"
-  val iconName = "hourglass_with_flowing_sand"
+  val iconName = "hourglass_flowing_sand"
 }
 
 case object Completed extends RequestStatus {
