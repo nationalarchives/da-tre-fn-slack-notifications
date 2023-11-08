@@ -255,4 +255,15 @@ class MessageBuilderSpec extends AnyFlatSpec with MockitoSugar {
     )
   }
 
+  "formatTimestamp" should "correctly parse a zoned timestamp" in {
+    formatTimestamp("2023-11-06T17:09:49.220693Z") shouldBe "17:09:49"
+  }
+
+  "formatTimestamp" should "correctly parse a non ISO timestamp of the format sent by TDR" in {
+    formatTimestamp("2023-11-08 14:02:24.628853") shouldBe "14:02:24"
+  }
+
+  "formatTimestamp" should "return timestamp parse failed as string in case of being unable to parse" in {
+    formatTimestamp("i am not a timestamp") shouldBe "timestamp parse failed"
+  }
 }
