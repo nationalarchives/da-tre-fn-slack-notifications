@@ -16,14 +16,14 @@ object MessageBuilder {
         val bagAvailableMessage = parseBagAvailable(message)
         SlackMessageData(
           messageProperties = messageProperties,
-          reference = Some(bagAvailableMessage.parameters.reference), 
-          environment = environment, 
-          originator = bagAvailableMessage.parameters.originator, 
-          errorMessage = None, 
-          requestStatus = Received, 
+          reference = Some(bagAvailableMessage.parameters.reference),
+          environment = environment,
+          originator = bagAvailableMessage.parameters.originator,
+          errorMessage = None,
+          requestStatus = Received,
           packageStatus = None
         )
-      case "uk.gov.nationalarchives.da.messages.request.courtdocument.parse.RequestCourtDocumentParse" 
+      case "uk.gov.nationalarchives.da.messages.request.courtdocument.parse.RequestCourtDocumentParse"
         if messageProperties.producer == Producer.FCL =>
         val requestCourtDocumentParseMessage = parseRequestCourtDocumentParse(message)
         SlackMessageData(
@@ -35,12 +35,11 @@ object MessageBuilder {
           requestStatus = Received,
           packageStatus = None
         )
-      
       case "uk.gov.nationalarchives.da.messages.courtdocumentpackage.available.CourtDocumentPackageAvailable" =>
         val courtDocumentPackageAvailableMessage = parseCourtDocumentPackageAvailable(message)
         val requestStatus = courtDocumentPackageAvailableMessage.parameters.status match {
           case COURT_DOCUMENT_PARSE_NO_ERRORS => Completed
-          case COURT_DOCUMENT_PARSE_WITH_ERRORS => CompletedWithErrors  
+          case COURT_DOCUMENT_PARSE_WITH_ERRORS => CompletedWithErrors
         }
         SlackMessageData(
           messageProperties = messageProperties,
@@ -64,6 +63,7 @@ object MessageBuilder {
         )
     }
   }
+
   def buildMessageText(messageData: SlackMessageData): String = {
     import messageData._
     val headerLine = s":${requestStatus.iconName}: *${requestStatus.header}* ${reference.map(r => s"(`$r`)").getOrElse("")}"
@@ -88,7 +88,7 @@ object MessageBuilder {
 }
 
 case class SlackMessageData(
-   messageProperties: Properties,                        
+   messageProperties: Properties,
    reference: Option[String],
    environment: String,
    originator: Option[String],
