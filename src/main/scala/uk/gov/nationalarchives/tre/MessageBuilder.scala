@@ -5,8 +5,9 @@ import uk.gov.nationalarchives.da.messages.courtdocumentpackage.available.{Statu
 import uk.gov.nationalarchives.da.messages.courtdocumentpackage.available.Status.{COURT_DOCUMENT_PARSE_NO_ERRORS, COURT_DOCUMENT_PARSE_WITH_ERRORS}
 import uk.gov.nationalarchives.tre.MessageParsingUtils.{parseBagAvailable, parseCourtDocumentPackageAvailable, parseGenericMessage, parseRequestCourtDocumentParse, parseTreError}
 
-import java.time.format.DateTimeFormatter
-import java.time.{Instant, ZoneId}
+import java.time.format.{DateTimeFormatter, DateTimeParseException}
+import java.time.{Instant, LocalDateTime, ZoneId, ZonedDateTime}
+import scala.util.Try
 
 object MessageBuilder {
   def generateSlackMessageData(message: String, environment: String): Option[SlackMessageData] = {
@@ -79,11 +80,24 @@ object MessageBuilder {
       .mkString("\n")
   }
 
-  private def formatTimestamp(timestampString: String) = {
-    val instant = Instant.parse(timestampString)
-    val zonedTimestamp = instant.atZone(ZoneId.of("Europe/London"))
-    val formattedTime = zonedTimestamp.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
-    formattedTime
+  def formatTimestamp(timestampString: String) = {
+    val customFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
+    val londonZoneId = ZoneId.of("Europe/London")
+    val outFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+
+    try {
+      if (timestampString.endsWith("Z") && timestampString.contains("T")) {
+        val instant = Instant.parse(timestampString)
+        val zonedTimestamp = instant.atZone(londonZoneId)
+        zonedTimestamp.format(outFormatter)
+      } else {
+        val localDateTime = LocalDateTime.parse(timestampString, customFormatter)
+        val zonedTimestamp = localDateTime.atZone(londonZoneId)
+        zonedTimestamp.format(outFormatter)
+      }
+    } catch {
+      case _: DateTimeParseException => "timestamp parse failed"
+    }
   }
 }
 
