@@ -9,6 +9,7 @@ import uk.gov.nationalarchives.da.messages.request.courtdocument.parse.{ParserIn
 import uk.gov.nationalarchives.tre.GenericMessage
 import uk.gov.nationalarchives.tre.MessageParsingUtils._
 import uk.gov.nationalarchives.da.messages.bag.available.{BagAvailable, ConsignmentType, Parameters => BAParameters}
+import uk.gov.nationalarchives.tre.messages.treerror.{TreError, Parameters => TEParameters, Status => TEStatus}
 
 class MessageParsingUtilsSpec extends AnyFlatSpec with MockitoSugar {
 
@@ -179,6 +180,93 @@ class MessageParsingUtilsSpec extends AnyFlatSpec with MockitoSugar {
     )
   }
 
+  it should "parse a valid TREError message" in {
+    val testMessage =
+      """
+        |{
+        |   "properties" : {
+        |     "messageType" : "uk.gov.nationalarchives.tre.messages.treerror.TreError",
+        |     "timestamp" : "2023-11-06T17:09:49.220693Z",
+        |     "function" : "da-tre-fn-failure-destination",
+        |		  "producer" : "TRE",
+        |	    "executionId" : "c6ffcc06-fa82-4f84-8a25-3c30136cd499",
+        |	    "parentExecutionId" : null
+        |   },
+        |	  "parameters" : {
+        |     "status" : "TRE_ERROR",
+        |	    "originator" : null,
+        |     "reference" : "",
+        |	    "errors" : "\nArrived at failure destination with error details:\n\n{errorMessage=Something has gone terribly wrong, errorType=java.lang.Exception, stackTrace=[uk.gov.nationalarchives.tre.Lambda.handleRequest(Lambda.scala:15), java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method), java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(Unknown Source), java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source), java.base/java.lang.reflect.Method.invoke(Unknown Source)]}\n"
+        |	  }
+        |} 
+        |""".stripMargin
+
+    parseTreError(testMessage) shouldBe TreError(
+      properties = Properties(
+        messageType = "uk.gov.nationalarchives.tre.messages.treerror.TreError",
+        function = "da-tre-fn-failure-destination",
+        producer = Producer.TRE,
+        executionId = "c6ffcc06-fa82-4f84-8a25-3c30136cd499",
+        parentExecutionId = None,
+        timestamp = "2023-11-06T17:09:49.220693Z"
+      ),
+      parameters = TEParameters(
+        status = TEStatus.TRE_ERROR,
+        originator = None,
+        reference = "",
+        errors = Some(
+          "\nArrived at failure destination with error details:\n\n{errorMessage=Something has gone terribly wrong, errorType=java.lang.Exception, stackTrace=[uk.gov.nationalarchives.tre.Lambda.handleRequest(Lambda.scala:15), java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method), java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(Unknown Source), java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source), java.base/java.lang.reflect.Method.invoke(Unknown Source)]}\n"
+        )
+      )
+    )
+  }
+
+  it should "parse any json in the errors field of a TREError as a string" in {
+    val testMessage =
+      """
+        |{
+        |   "properties" : {
+        |     "messageType" : "uk.gov.nationalarchives.tre.messages.treerror.TreError",
+        |     "timestamp" : "2023-11-06T17:09:49.220693Z",
+        |     "function" : "da-tre-fn-failure-destination",
+        |		  "producer" : "TRE",
+        |	    "executionId" : "c6ffcc06-fa82-4f84-8a25-3c30136cd499",
+        |	    "parentExecutionId" : null
+        |   },
+        |	  "parameters" : {
+        |     "status" : "TRE_ERROR",
+        |	    "originator" : null,
+        |     "reference" : "",
+        |	    "errors" : {
+        |       "ErrorValue": "some value",
+        |       "ErrorMessage": "some message"
+        |     }
+        |	  }
+        |} 
+        |""".stripMargin
+
+    parseTreError(testMessage) shouldBe TreError(
+      properties = Properties(
+        messageType = "uk.gov.nationalarchives.tre.messages.treerror.TreError",
+        function = "da-tre-fn-failure-destination",
+        producer = Producer.TRE,
+        executionId = "c6ffcc06-fa82-4f84-8a25-3c30136cd499",
+        parentExecutionId = None,
+        timestamp = "2023-11-06T17:09:49.220693Z"
+      ),
+      parameters = TEParameters(
+        status = TEStatus.TRE_ERROR,
+        originator = None,
+        reference = "",
+        errors = Some(
+          """{
+            |  "ErrorValue" : "some value",
+            |  "ErrorMessage" : "some message"
+            |}""".stripMargin)
+      )
+    )
+  }
+  
   it should "parse a json like env var with a notifiable channel/webhook pair" in {
     parseStringMap("""{"channel_name":"webhook_url"}""") shouldBe Map("channel_name" -> "webhook_url")
   }
