@@ -198,7 +198,7 @@ class MessageParsingUtilsSpec extends AnyFlatSpec with MockitoSugar {
         |     "reference" : "",
         |	    "errors" : "\nArrived at failure destination with error details:\n\n{errorMessage=Something has gone terribly wrong, errorType=java.lang.Exception, stackTrace=[uk.gov.nationalarchives.tre.Lambda.handleRequest(Lambda.scala:15), java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method), java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(Unknown Source), java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source), java.base/java.lang.reflect.Method.invoke(Unknown Source)]}\n"
         |	  }
-        |} 
+        |}
         |""".stripMargin
 
     parseTreError(testMessage) shouldBe TreError(
@@ -242,7 +242,7 @@ class MessageParsingUtilsSpec extends AnyFlatSpec with MockitoSugar {
         |       "ErrorMessage": "some message"
         |     }
         |	  }
-        |} 
+        |}
         |""".stripMargin
 
     parseTreError(testMessage) shouldBe TreError(
@@ -266,7 +266,7 @@ class MessageParsingUtilsSpec extends AnyFlatSpec with MockitoSugar {
       )
     )
   }
-  
+
   it should "parse a json like env var with a notifiable channel/webhook pair" in {
     parseStringMap("""{"channel_name":"webhook_url"}""") shouldBe Map("channel_name" -> "webhook_url")
   }

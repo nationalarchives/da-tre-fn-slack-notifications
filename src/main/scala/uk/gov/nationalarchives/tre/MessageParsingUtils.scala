@@ -23,7 +23,7 @@ object MessageParsingUtils {
       errorsCursor.as[Option[String]].fold(_ => errorsCursor.focus.map(_.toString), identity)
     }
   } yield Parameters(status, originator, reference, errors)
-  
+
   def parseGenericMessage(message: String): GenericMessage =
     parser.decode[GenericMessage](message).fold(error => throw new RuntimeException(error), identity)
 
