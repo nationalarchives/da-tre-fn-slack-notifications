@@ -232,7 +232,7 @@ class MessageBuilderSpec extends AnyFlatSpec with MockitoSugar {
         |     "reference" : "",
         |	    "errors" : "\nArrived at failure destination with error details:\n\n{errorMessage=Something has gone terribly wrong, errorType=java.lang.Exception, stackTrace=[uk.gov.nationalarchives.tre.Lambda.handleRequest(Lambda.scala:15), java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method), java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(Unknown Source), java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source), java.base/java.lang.reflect.Method.invoke(Unknown Source)]}\n"
         |	  }
-        |} 
+        |}
         |""".stripMargin
 
     generateSlackMessageData(testMessage, environment) shouldBe Some(
