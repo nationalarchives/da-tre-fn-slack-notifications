@@ -55,7 +55,7 @@ class MessageBuilderSpec extends AnyFlatSpec with MockitoSugar {
     )
   }
 
-  it should "return the correct SlackMessageData for a RequestCourtDocumentParse message with an originator of FCL" in {
+  it should "return no SlackMessageData for a RequestCourtDocumentParse message with an originator of FCL" in {
     val testMessage =
       """
         |{
@@ -79,24 +79,7 @@ class MessageBuilderSpec extends AnyFlatSpec with MockitoSugar {
         |	}
         |""".stripMargin
 
-    generateSlackMessageData(testMessage, environment) shouldBe Some(
-      SlackMessageData(
-        messageProperties = Properties(
-          messageType = "uk.gov.nationalarchives.da.messages.request.courtdocument.parse.RequestCourtDocumentParse",
-          timestamp = "2023-11-03T10:44:59.235436Z",
-          function = "",
-          producer = Producer.FCL,
-          executionId = "",
-          parentExecutionId = None,
-        ),
-        reference = Some("FCL-12345"),
-        environment = environment,
-        originator = Some("FCL"),
-        errorMessage = None,
-        requestStatus = Received,
-        packageStatus = None
-      )
-    )
+    generateSlackMessageData(testMessage, environment) shouldBe None
   }
 
   it should "return no SlackMessageData for a RequestCourtDocumentParse message with an originator of TDR" in {
@@ -126,7 +109,7 @@ class MessageBuilderSpec extends AnyFlatSpec with MockitoSugar {
     generateSlackMessageData(testMessage, environment) shouldBe None
   }
 
-  it should "return the correct SlackMessageData for a CourtDocumentPackageAvailable message without errors" in {
+  it should "return the correct SlackMessageData for a CourtDocumentPackageAvailable message without errors with an originator of TDR" in {
     val testMessage =
       """
         |{
@@ -170,7 +153,7 @@ class MessageBuilderSpec extends AnyFlatSpec with MockitoSugar {
     )
   }
 
-  it should "return the correct SlackMessageData for a CourtDocumentPackageAvailable message with errors" in {
+  it should "return the correct SlackMessageData for a CourtDocumentPackageAvailable message with errors with an originator of TDR" in {
     val testMessage =
       """
         |{
@@ -207,6 +190,77 @@ class MessageBuilderSpec extends AnyFlatSpec with MockitoSugar {
         reference = Some("TDR-2021-CF6L"),
         environment = environment,
         originator = Some("TDR"),
+        errorMessage = None,
+        requestStatus = CompletedWithErrors,
+        packageStatus = Some(COURT_DOCUMENT_PARSE_WITH_ERRORS)
+      )
+    )
+  }
+
+  it should "return no SlackMessageData for a CourtDocumentPackageAvailable message without errors with an originator of FCL" in {
+    val testMessage =
+      """
+        |{
+        |    "properties": {
+        |        "messageType": "uk.gov.nationalarchives.da.messages.courtdocumentpackage.available.CourtDocumentPackageAvailable",
+        |        "timestamp": "2023-11-03T10:46:37.285978Z",
+        |        "function": "pte-ah-tre-court-document-pack-lambda",
+        |        "producer": "TRE",
+        |        "executionId": "2443a118-f960-46f0-91e8-64baa1c9c84b",
+        |        "parentExecutionId": "5366065d-83e6-45d2-8fd5-0386abbe16f7"
+        |    },
+        |    "parameters": {
+        |        "status": "COURT_DOCUMENT_PARSE_NO_ERRORS",
+        |        "reference": "TDR-2021-CF6L",
+        |        "s3Bucket": "pte-ah-tre-court-document-pack-out",
+        |        "s3Key": "TDR-2021-CF6L/2443a118-f960-46f0-91e8-64baa1c9c84b/TRE-TDR-2021-CF6L.tar.gz",
+        |        "metadataFilePath": "/metadata.json",
+        |        "metadataFileType": "Json",
+        |        "originator": "FCL"
+        |    }
+        |}
+        |""".stripMargin
+
+    generateSlackMessageData(testMessage, environment) shouldBe None
+  }
+
+  it should "return the correct SlackMessageData for a CourtDocumentPackageAvailable message with errors with an originator of FCL" in {
+    val testMessage =
+      """
+        |{
+        |    "properties": {
+        |        "messageType": "uk.gov.nationalarchives.da.messages.courtdocumentpackage.available.CourtDocumentPackageAvailable",
+        |        "timestamp": "2023-11-03T10:46:37.285978Z",
+        |        "function": "pte-ah-tre-court-document-pack-lambda",
+        |        "producer": "TRE",
+        |        "executionId": "2443a118-f960-46f0-91e8-64baa1c9c84b",
+        |        "parentExecutionId": "5366065d-83e6-45d2-8fd5-0386abbe16f7"
+        |    },
+        |    "parameters": {
+        |        "status": "COURT_DOCUMENT_PARSE_WITH_ERRORS",
+        |        "reference": "TDR-2021-CF6L",
+        |        "s3Bucket": "pte-ah-tre-court-document-pack-out",
+        |        "s3Key": "TDR-2021-CF6L/2443a118-f960-46f0-91e8-64baa1c9c84b/TRE-TDR-2021-CF6L.tar.gz",
+        |        "metadataFilePath": "/metadata.json",
+        |        "metadataFileType": "Json",
+        |        "originator": "FCL"
+        |    }
+        |}
+        |""".stripMargin
+
+    generateSlackMessageData(testMessage, environment) shouldBe Some(
+      SlackMessageData(
+        messageProperties = Properties(
+          messageType = "uk.gov.nationalarchives.da.messages.courtdocumentpackage.available.CourtDocumentPackageAvailable",
+          function = "pte-ah-tre-court-document-pack-lambda",
+          producer = Producer.TRE,
+          executionId = "2443a118-f960-46f0-91e8-64baa1c9c84b",
+          parentExecutionId = Some("5366065d-83e6-45d2-8fd5-0386abbe16f7"),
+          timestamp = "2023-11-03T10:46:37.285978Z"
+        ),
+        reference = Some("TDR-2021-CF6L"),
+        environment = environment,
+        originator = Some("FCL"),
         errorMessage = None,
         requestStatus = CompletedWithErrors,
         packageStatus = Some(COURT_DOCUMENT_PARSE_WITH_ERRORS)
