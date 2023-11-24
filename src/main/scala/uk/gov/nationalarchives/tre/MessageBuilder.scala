@@ -1,13 +1,13 @@
 package uk.gov.nationalarchives.tre
 
-import uk.gov.nationalarchives.common.messages.{Producer, Properties}
-import uk.gov.nationalarchives.da.messages.courtdocumentpackage.available.{Status => PackageStatus}
+import uk.gov.nationalarchives.common.messages.Properties
+import uk.gov.nationalarchives.da.messages.courtdocumentpackage.available.{CourtDocumentPackageAvailable, Status => PackageStatus}
 import uk.gov.nationalarchives.da.messages.courtdocumentpackage.available.Status.{COURT_DOCUMENT_PARSE_NO_ERRORS, COURT_DOCUMENT_PARSE_WITH_ERRORS}
-import uk.gov.nationalarchives.tre.MessageParsingUtils.{parseBagAvailable, parseCourtDocumentPackageAvailable, parseGenericMessage, parseRequestCourtDocumentParse, parseTreError}
+import uk.gov.nationalarchives.tre.MessageParsingUtils.{parseBagAvailable, parseCourtDocumentPackageAvailable, parseGenericMessage, parseTreError}
 
 import java.time.format.{DateTimeFormatter, DateTimeParseException}
-import java.time.{Instant, LocalDateTime, ZoneId, ZonedDateTime}
-import scala.util.Try
+import java.time.{Instant, LocalDateTime, ZoneId}
+
 
 object MessageBuilder {
   def generateSlackMessageData(message: String, environment: String): Option[SlackMessageData] = {
@@ -24,19 +24,8 @@ object MessageBuilder {
           requestStatus = Received,
           packageStatus = None
         )
-      case "uk.gov.nationalarchives.da.messages.request.courtdocument.parse.RequestCourtDocumentParse"
-        if messageProperties.producer == Producer.FCL =>
-        val requestCourtDocumentParseMessage = parseRequestCourtDocumentParse(message)
-        SlackMessageData(
-          messageProperties = messageProperties,
-          reference = Some(requestCourtDocumentParseMessage.parameters.reference),
-          environment = environment,
-          originator = requestCourtDocumentParseMessage.parameters.originator,
-          errorMessage = None,
-          requestStatus = Received,
-          packageStatus = None
-        )
-      case "uk.gov.nationalarchives.da.messages.courtdocumentpackage.available.CourtDocumentPackageAvailable" =>
+      case "uk.gov.nationalarchives.da.messages.courtdocumentpackage.available.CourtDocumentPackageAvailable"
+        if isNotFclParseWithoutErrors(parseCourtDocumentPackageAvailable(message)) =>
         val courtDocumentPackageAvailableMessage = parseCourtDocumentPackageAvailable(message)
         val requestStatus = courtDocumentPackageAvailableMessage.parameters.status match {
           case COURT_DOCUMENT_PARSE_NO_ERRORS => Completed
@@ -63,6 +52,11 @@ object MessageBuilder {
           packageStatus = None
         )
     }
+  }
+
+  private def isNotFclParseWithoutErrors(courtDocumentPackageAvailableMessage: CourtDocumentPackageAvailable): Boolean = {
+    !(courtDocumentPackageAvailableMessage.parameters.originator.contains("FCL") &&
+      courtDocumentPackageAvailableMessage.parameters.status == COURT_DOCUMENT_PARSE_NO_ERRORS)
   }
 
   def buildMessageText(messageData: SlackMessageData): String = {
