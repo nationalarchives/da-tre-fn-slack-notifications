@@ -55,6 +55,33 @@ class MessageBuilderSpec extends AnyFlatSpec with MockitoSugar {
     )
   }
 
+  "it" should "return no SlackMessageData if the BagAvailable message has a standard consignment type" in {
+    val testMessage =
+      """
+        |{
+        |	  "properties" : {
+        |	      "messageType" : "uk.gov.nationalarchives.da.messages.bag.available.BagAvailable",
+        |       "timestamp" : "2023-11-06T15:15:08.443071Z",
+        |		    "function" : "",
+        |	      "producer" : "TDR",
+        |	      "executionId" : "",
+        |       "parentExecutionId" : null
+        |	  },
+        |	  "parameters" : {
+        |	      "reference" : "TDR-2021-CF6L",
+        |	      "originator" : "TDR",
+        |	      "consignmentType" : "STANDARD",
+        |	    	"s3Bucket" : "da-transform-sample-data",
+        |	      "s3BagKey" : "dc34c025-ca5c-4746-b89a-a05bb451d344/sample-data/judgment/tdr-bag/TDR-2021-CF6L.tar.gz",
+        |	      "s3BagSha256Key" : "TDR-2021-CF6L.tar.gz.sha256"
+        |	  }
+        |}
+        |""".stripMargin
+
+    generateSlackMessageData(testMessage, environment) shouldBe None
+  }
+
+
   it should "return no SlackMessageData for a RequestCourtDocumentParse message with an originator of FCL" in {
     val testMessage =
       """
@@ -81,7 +108,7 @@ class MessageBuilderSpec extends AnyFlatSpec with MockitoSugar {
 
     generateSlackMessageData(testMessage, environment) shouldBe None
   }
-
+  
   it should "return no SlackMessageData for a RequestCourtDocumentParse message with an originator of TDR" in {
     val testMessage =
       """
