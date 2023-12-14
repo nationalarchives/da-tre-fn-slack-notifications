@@ -108,7 +108,7 @@ class MessageBuilderSpec extends AnyFlatSpec with MockitoSugar {
 
     generateSlackMessageData(testMessage, environment) shouldBe None
   }
-  
+
   it should "return no SlackMessageData for a RequestCourtDocumentParse message with an originator of TDR" in {
     val testMessage =
       """
