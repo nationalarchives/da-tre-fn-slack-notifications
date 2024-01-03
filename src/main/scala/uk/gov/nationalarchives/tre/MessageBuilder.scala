@@ -2,6 +2,7 @@ package uk.gov.nationalarchives.tre
 
 import uk.gov.nationalarchives.common.messages.Properties
 import uk.gov.nationalarchives.da.messages.courtdocumentpackage.available.{CourtDocumentPackageAvailable, Status => PackageStatus}
+import uk.gov.nationalarchives.da.messages.bag.available.ConsignmentType.STANDARD
 import uk.gov.nationalarchives.da.messages.courtdocumentpackage.available.Status.{COURT_DOCUMENT_PARSE_NO_ERRORS, COURT_DOCUMENT_PARSE_WITH_ERRORS}
 import uk.gov.nationalarchives.tre.MessageParsingUtils.{parseBagAvailable, parseCourtDocumentPackageAvailable, parseGenericMessage, parseTreError}
 
@@ -13,7 +14,8 @@ object MessageBuilder {
   def generateSlackMessageData(message: String, environment: String): Option[SlackMessageData] = {
     val messageProperties = parseGenericMessage(message).properties
     Option(messageProperties.messageType) collect {
-      case "uk.gov.nationalarchives.da.messages.bag.available.BagAvailable" =>
+      case "uk.gov.nationalarchives.da.messages.bag.available.BagAvailable"
+        if parseBagAvailable(message).parameters.consignmentType != STANDARD =>
         val bagAvailableMessage = parseBagAvailable(message)
         SlackMessageData(
           messageProperties = messageProperties,
