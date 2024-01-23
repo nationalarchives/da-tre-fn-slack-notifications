@@ -24,13 +24,13 @@ libraryDependencies ++= Seq(
   "uk.gov.nationalarchives" % "da-transform-schemas" % "2.5",
   "com.amazonaws" % "aws-lambda-java-events" % "3.11.1",
   "com.typesafe.play" %% "play-json" % "2.10.0-RC6",
-  "org.apache.httpcomponents" % "httpclient" % "4.5.13"
+  "org.apache.httpcomponents" % "httpclient" % "4.5.13",
+  "io.circe" %% "circe-generic-extras" % "0.14.3"
 )
 
 val circeVersion = "0.14.6"
 libraryDependencies ++= Seq(
   "io.circe" %% "circe-core",
   "io.circe" %% "circe-generic",
-  "io.circe" %% "circe-parser",
-  "io.circe" %% "circe-generic-extras"
+  "io.circe" %% "circe-parser"
 ).map(_ % circeVersion)
