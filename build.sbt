@@ -22,7 +22,7 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.2.17" % Test,
   "org.scalatestplus" %% "mockito-4-11" % "3.2.17.0" % Test,
   "uk.gov.nationalarchives" % "da-transform-schemas" % "2.5",
-  "com.amazonaws" % "aws-lambda-java-events" % "3.11.1",
+  "com.amazonaws" % "aws-lambda-java-events" % "3.11.4",
   "com.typesafe.play" %% "play-json" % "2.10.4",
   "io.circe" %% "circe-generic-extras" % "0.14.3",
   "org.apache.httpcomponents" % "httpclient" % "4.5.14"
