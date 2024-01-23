@@ -24,7 +24,7 @@ libraryDependencies ++= Seq(
   "uk.gov.nationalarchives" % "da-transform-schemas" % "2.5",
   "com.amazonaws" % "aws-lambda-java-events" % "3.11.1",
   "com.typesafe.play" %% "play-json" % "2.10.0-RC6",
-  "org.apache.httpcomponents" % "httpclient" % "4.5.13"
+  "org.apache.httpcomponents" % "httpclient" % "4.5.14"
 )
 
 val circeVersion = "0.14.2"
