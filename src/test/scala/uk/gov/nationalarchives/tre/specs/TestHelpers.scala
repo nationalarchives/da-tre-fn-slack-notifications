@@ -4,6 +4,7 @@ import com.amazonaws.services.lambda.runtime.api.client.logging.LogSink
 import com.amazonaws.services.lambda.runtime.events.SNSEvent.{SNS, SNSRecord}
 import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage
 import com.amazonaws.services.lambda.runtime.events.{LambdaDestinationEvent, SNSEvent, SQSEvent}
+import com.amazonaws.services.lambda.runtime.logging.{LogFormat, LogLevel}
 
 import java.nio.charset.StandardCharsets
 import scala.jdk.CollectionConverters.{MapHasAsJava, SeqHasAsJava}
@@ -37,6 +38,8 @@ object TestHelpers {
     override def log(message: Array[Byte]): Unit = logHolder.setLatestLog(message)
 
     override def close(): Unit = {}
+
+    override def log(logLevel: LogLevel, logFormat: LogFormat, message: Array[Byte]): Unit = log(message)
   }
 
   class LogHolder {
