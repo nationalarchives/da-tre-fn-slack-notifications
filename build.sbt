@@ -1,6 +1,6 @@
 import Dependencies._
 
-ThisBuild / scalaVersion := "2.13.13"
+ThisBuild / scalaVersion := "2.13.14"
 ThisBuild / version := "0.1.0"
 
 lazy val root = (project in file("."))
@@ -22,13 +22,13 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.2.19" % Test,
   "org.scalatestplus" %% "mockito-4-11" % "3.2.18.0" % Test,
   "uk.gov.nationalarchives" % "da-transform-schemas" % "2.8",
-  "com.amazonaws" % "aws-lambda-java-events" % "3.11.5",
-  "org.playframework" %% "play-json" % "3.0.2",
+  "com.amazonaws" % "aws-lambda-java-events" % "3.11.6",
+  "org.playframework" %% "play-json" % "3.0.4",
   "io.circe" %% "circe-generic-extras" % "0.14.3",
   "org.apache.httpcomponents" % "httpclient" % "4.5.14"
 )
 
-val circeVersion = "0.14.7"
+val circeVersion = "0.14.8"
 libraryDependencies ++= Seq(
   "io.circe" %% "circe-core",
   "io.circe" %% "circe-generic",
