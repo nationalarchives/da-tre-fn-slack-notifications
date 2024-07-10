@@ -224,7 +224,7 @@ class MessageBuilderSpec extends AnyFlatSpec with MockitoSugar {
     )
   }
 
-  it should "return no SlackMessageData for a CourtDocumentPackageAvailable message without errors with an originator of FCL" in {
+  it should "temp return SlackMessageData for a CourtDocumentPackageAvailable message without errors with an originator of FCL" in {
     val testMessage =
       """
         |{
@@ -248,7 +248,24 @@ class MessageBuilderSpec extends AnyFlatSpec with MockitoSugar {
         |}
         |""".stripMargin
 
-    generateSlackMessageData(testMessage, environment) shouldBe None
+    generateSlackMessageData(testMessage, environment) shouldBe Some(
+      SlackMessageData(
+        messageProperties = Properties(
+          messageType = "uk.gov.nationalarchives.da.messages.courtdocumentpackage.available.CourtDocumentPackageAvailable",
+          function = "pte-ah-tre-court-document-pack-lambda",
+          producer = Producer.TRE,
+          executionId = "2443a118-f960-46f0-91e8-64baa1c9c84b",
+          parentExecutionId = Some("5366065d-83e6-45d2-8fd5-0386abbe16f7"),
+          timestamp = "2023-11-03T10:46:37.285978Z"
+        ),
+        reference = Some("TDR-2021-CF6L"),
+        environment = environment,
+        originator = Some("FCL"),
+        errorMessage = None,
+        requestStatus = Completed,
+        packageStatus = Some(COURT_DOCUMENT_PARSE_NO_ERRORS)
+      )
+    )
   }
 
   it should "return the correct SlackMessageData for a CourtDocumentPackageAvailable message with errors with an originator of FCL" in {
