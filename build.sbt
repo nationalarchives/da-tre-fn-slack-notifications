@@ -22,13 +22,13 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.2.19" % Test,
   "org.scalatestplus" %% "mockito-4-11" % "3.2.18.0" % Test,
   "uk.gov.nationalarchives" % "da-transform-schemas" % "2.11",
-  "com.amazonaws" % "aws-lambda-java-events" % "3.13.0",
+  "com.amazonaws" % "aws-lambda-java-events" % "3.14.0",
   "org.playframework" %% "play-json" % "3.0.4",
   "io.circe" %% "circe-generic-extras" % "0.14.4",
   "org.apache.httpcomponents" % "httpclient" % "4.5.14"
 )
 
-val circeVersion = "0.14.9"
+val circeVersion = "0.14.10"
 libraryDependencies ++= Seq(
   "io.circe" %% "circe-core",
   "io.circe" %% "circe-generic",
