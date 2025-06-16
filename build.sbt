@@ -28,7 +28,7 @@ libraryDependencies ++= Seq(
   "org.apache.httpcomponents" % "httpclient" % "4.5.14"
 )
 
-val circeVersion = "0.14.13"
+val circeVersion = "0.14.14"
 libraryDependencies ++= Seq(
   "io.circe" %% "circe-core",
   "io.circe" %% "circe-generic",
