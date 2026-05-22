@@ -3,9 +3,13 @@ on:
     branches:
       - 'main'
   workflow_dispatch:
+permissions: {}
 jobs:
   ecr-deploy:
-    uses: nationalarchives/da-tre-github-actions/.github/workflows/docker-build-and-ecr-deploy-with-wiz-scan.yml@0.0.81
+    permissions: 
+      contents: write
+      id-token: write
+    uses: nationalarchives/da-tre-github-actions/.github/workflows/docker-build-and-ecr-deploy-with-wiz-scan.yml@0.0.82
     with:
       docker_image_name: 'tre-fn-slack-notifications'
       build_dir: '.'
