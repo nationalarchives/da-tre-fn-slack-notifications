@@ -6,6 +6,9 @@ on:
 permissions: {}
 jobs:
   ecr-deploy:
+    permissions:
+      contents: write
+      id-token: write
     uses: nationalarchives/da-tre-github-actions/.github/workflows/docker-build-and-ecr-deploy-with-wiz-scan.yml@0.0.82
     with:
       docker_image_name: 'tre-fn-slack-notifications'
