@@ -12,7 +12,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
       - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd
-      - uses: sbt/setup-sbt@2e222825582620cc38d2a54e674f3c01b7c14f5d # v1.1.24
+      - uses: sbt/setup-sbt@4ed7b7ec4bfa2074fe48554c09e341267397247c # v1.2.0
       - name: Run unit tests
         shell: bash
         run: |
