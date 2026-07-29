@@ -3,7 +3,7 @@ on:
   pull_request:
     branches: ["main"]
 
-permissions: {}    
+permissions: {}
 
 jobs:
   on-pr-checks:
