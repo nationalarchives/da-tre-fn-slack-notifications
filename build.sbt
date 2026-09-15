@@ -12,7 +12,7 @@ lazy val root = (project in file("."))
     assembly / assemblyOutputPath := file("target/function.jar")
   )
 
-assemblyMergeStrategy in assembly := {
+assembly / assemblyMergeStrategy := {
   case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard
   case _                        => MergeStrategy.first
 }
