@@ -17,6 +17,16 @@ assembly / assemblyMergeStrategy := {
   case _                        => MergeStrategy.first
 }
 
+val jacksonVersion = "2.18.12"
+
+dependencyOverrides ++= Seq(
+  "com.fasterxml.jackson.core" % "jackson-annotations",
+  "com.fasterxml.jackson.core" % "jackson-core",
+  "com.fasterxml.jackson.core" % "jackson-databind",
+  "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8",
+  "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310"
+).map(_ % jacksonVersion)
+
 libraryDependencies ++= Seq(
   "com.github.sbt" % "junit-interface" % "0.13.3" % Test,
   "org.scalatest" %% "scalatest" % "3.2.20" % Test,
@@ -24,11 +34,11 @@ libraryDependencies ++= Seq(
   "uk.gov.nationalarchives" % "da-transform-schemas" % "2.14",
   "com.amazonaws" % "aws-lambda-java-events" % "3.16.1",
   "org.playframework" %% "play-json" % "3.0.6",
-  "io.circe" %% "circe-generic-extras" % "0.14.4",
+  "io.circe" %% "circe-generic-extras" % "0.14.17",
   "org.apache.httpcomponents" % "httpclient" % "4.5.14"
 )
 
-val circeVersion = "0.14.16"
+val circeVersion = "0.14.17"
 libraryDependencies ++= Seq(
   "io.circe" %% "circe-core",
   "io.circe" %% "circe-generic",
