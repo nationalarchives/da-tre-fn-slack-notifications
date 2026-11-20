@@ -63,6 +63,7 @@ class MessageParsingUtilsSpec extends AnyFlatSpec with MockitoSugar {
         |	      "reference" : "TDR-2021-CF6L",
         |	      "originator" : "TDR",
         |	      "consignmentType" : "COURT_DOCUMENT",
+        |	      "transferringBodies" : [],
         |	    	"s3Bucket" : "da-transform-sample-data",
         |	      "s3BagKey" : "dc34c025-ca5c-4746-b89a-a05bb451d344/sample-data/judgment/tdr-bag/TDR-2021-CF6L.tar.gz",
         |	      "s3BagSha256Key" : "TDR-2021-CF6L.tar.gz.sha256"
@@ -83,6 +84,8 @@ class MessageParsingUtilsSpec extends AnyFlatSpec with MockitoSugar {
         reference = "TDR-2021-CF6L",
         consignmentType = ConsignmentType.COURT_DOCUMENT,
         originator = Some("TDR"),
+        series = None,
+        transferringBodies = Seq.empty,
         s3Bucket = "da-transform-sample-data",
         s3BagKey = "dc34c025-ca5c-4746-b89a-a05bb451d344/sample-data/judgment/tdr-bag/TDR-2021-CF6L.tar.gz",
         s3BagSha256Key = "TDR-2021-CF6L.tar.gz.sha256"
